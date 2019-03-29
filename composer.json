@@ -1,0 +1,25 @@
+{
+	"name": "kr0lik/yii2-resource",
+	"description": "Behaviour for resource stor for Yii2",
+	"type": "yii2-extension",
+	"keywords": ["yii2","resource","file","upload"],
+	"license": "MIT",
+	"support": {
+        	"source": "https://github.com/kr0lik/yii2-resource"
+    	},
+	"authors": [
+		{
+			"name": "krolik",
+			"email": "krolik@yandex.ru"
+		}
+	],
+	"require": {
+		"php": ">=7.2",
+        	"yiisoft/yii2": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"kr0lik\\recource\\": ""
+		}
+	}
+}
