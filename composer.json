@@ -1,6 +1,6 @@
 {
 	"name": "kr0lik/yii2-resource",
-	"description": "Behaviour for resource stor for Yii2",
+	"description": "Behaviour for resource store for Yii2",
 	"type": "yii2-extension",
 	"keywords": ["yii2","resource","file","upload"],
 	"license": "MIT",
