@@ -1,2 +1,2 @@
 # yii2-resource
-Behaviour for resource store
+Behaviour for resource store for Yii2
