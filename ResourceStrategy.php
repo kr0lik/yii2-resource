@@ -155,7 +155,9 @@ class ResourceStrategy
     public function deleteOldResource(): ?bool
     {
         $status = null;
-        if ($this->oldResource) $status = $this->moveResourceToTemp($this->oldResource);
+        if ($this->oldResource) {
+            if ($status = $this->moveResourceToTemp($this->oldResource)) $this->oldResource = null;
+        }
         
         $model = $this->model;
         $oldAttributes = $model->getOldAttributes();
