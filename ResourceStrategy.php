@@ -161,7 +161,11 @@ class ResourceStrategy
         $oldAttributes = $model->getOldAttributes();
         $oldFile = isset($oldAttributes[$this->attribute]) && $oldAttributes[$this->attribute] ? $oldAttributes[$this->attribute] : null;
 
-        if ($oldFile && $oldFile != $model->{$this->attribute}) return $status && $this->moveResourceToTemp($oldFile);
+        if ($oldFile && $oldFile != $model->{$this->attribute}) {
+            $status2 = $this->moveResourceToTemp($oldFile);
+            
+            if ($status !== false && $status2 !== null) $status = $status2;
+        }
 
         return $status;
     }
