@@ -18,6 +18,7 @@ class ResourceBehavior extends Behavior
             ActiveRecord::EVENT_BEFORE_VALIDATE => '_validate',
             ActiveRecord::EVENT_BEFORE_INSERT => '_save',
             ActiveRecord::EVENT_BEFORE_UPDATE => '_save',
+            ActiveRecord::EVENT_AFTER_UPDATE => '_clear',
             ActiveRecord::EVENT_AFTER_DELETE => '_delete'
         ];
     }
@@ -70,6 +71,19 @@ class ResourceBehavior extends Behavior
 
         foreach ($this->getStrategies() as $strategy) {
             if ($strategy->saveResource() === false) {
+                $status = false;
+            }
+        }
+
+        return $status;
+    }
+    
+    public function _clear($event)
+    {
+        $status = true;
+
+        foreach ($this->getStrategies() as $strategy) {
+            if ($strategy->deleteOldResource() === false) {
                 $status = false;
             }
         }
