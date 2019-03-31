@@ -14,6 +14,7 @@ class ResourceStrategy
     protected $relativeTempFolder;
 
     private $hashLength = 6;
+    private $oldResource;
 
     public function __construct(Model $model, string $attribute, string $relativeResourceFolder, string $relativeTempFolder)
     {
@@ -134,6 +135,7 @@ class ResourceStrategy
             $newFilePath = $newDir . $newFileName;
 
             if (copy($this->getResourcePath(true), $newFilePath)) {
+                $this->oldResource = $this->model->{$this->attribute};
                 $this->model->{$this->attribute} = $newFileName;
                 return true;
             } else {
@@ -152,14 +154,16 @@ class ResourceStrategy
 
     public function deleteOldResource(): ?bool
     {
+        $status = null;
+        if ($this->oldResource) $status = $this->moveResourceToTemp($this->oldResource);
+        
         $model = $this->model;
-
         $oldAttributes = $model->getOldAttributes();
         $oldFile = isset($oldAttributes[$this->attribute]) && $oldAttributes[$this->attribute] ? $oldAttributes[$this->attribute] : null;
 
-        if ($oldFile && $oldFile != $model->{$this->attribute}) return $this->moveResourceToTemp($oldFile);
+        if ($oldFile && $oldFile != $model->{$this->attribute}) return $status && $this->moveResourceToTemp($oldFile);
 
-        return null;
+        return $status;
     }
 
     private function moveResourceToTemp(string $oldResourceName): ?bool
