@@ -15,11 +15,11 @@ class ResourceBehavior extends Behavior
     public function events()
     {
         return [
-            ActiveRecord::EVENT_BEFORE_VALIDATE => '_validate',
-            ActiveRecord::EVENT_BEFORE_INSERT => '_save',
-            ActiveRecord::EVENT_BEFORE_UPDATE => '_save',
-            ActiveRecord::EVENT_AFTER_UPDATE => '_clear',
-            ActiveRecord::EVENT_AFTER_DELETE => '_delete'
+            ActiveRecord::EVENT_BEFORE_VALIDATE => '_validateResource',
+            ActiveRecord::EVENT_BEFORE_INSERT => '_saveResource',
+            ActiveRecord::EVENT_BEFORE_UPDATE => '_saveResource',
+            ActiveRecord::EVENT_AFTER_UPDATE => '_clearResource',
+            ActiveRecord::EVENT_AFTER_DELETE => '_deleteResource'
         ];
     }
 
@@ -39,7 +39,7 @@ class ResourceBehavior extends Behavior
         return $this->strategies;
     }
 
-    public function _validate($event)
+    public function _validateResource($event)
     {
         $status = true;
 
@@ -52,7 +52,7 @@ class ResourceBehavior extends Behavior
         return $status;
     }
 
-    public function _delete($event)
+    public function _deleteResource($event)
     {
         $status = true;
 
@@ -65,7 +65,7 @@ class ResourceBehavior extends Behavior
         return $status;
     }
 
-    public function _save($event)
+    public function _saveResource($event)
     {
         $status = true;
 
@@ -78,7 +78,7 @@ class ResourceBehavior extends Behavior
         return $status;
     }
     
-    public function _clear($event)
+    public function _clearResource($event)
     {
         $status = true;
 
