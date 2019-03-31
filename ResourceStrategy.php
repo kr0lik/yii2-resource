@@ -105,6 +105,11 @@ class ResourceStrategy
                 $this->model->addError($this->attribute, 'Cant save new file');
                 return false;
             }
+        } elseif ($this->isTemp()) {
+            if (! file_exists($this->getResourcePath(true))) {
+                $this->model->addError($this->attribute, 'No temp file');
+                return false;
+            }
         }
 
         return null;
@@ -112,9 +117,7 @@ class ResourceStrategy
 
     public function saveResource(): ?bool
     {
-        $this->uploadResource();
-
-        if ($this->isTemp()) {
+        if ($this->uploadResource() !=== false && $this->isTemp()) {
             $extension = pathinfo($this->getResourcePath(), PATHINFO_EXTENSION);
             $newFileName = $this->generateHash() . '.' . $extension;
 
@@ -129,17 +132,13 @@ class ResourceStrategy
             }
 
             $newFilePath = $newDir . $newFileName;
-            if (file_exists($this->getResourcePath(true))) {
-                if (rename($this->getResourcePath(true), $newFilePath)) {
-                    $this->model->{$this->attribute} = $newFileName;
-                    $this->deleteOldResource();
-                    return true;
-                } else {
-                    $this->model->addError($this->attribute, 'Cant move file from temp');
-                    return false;
-                }
+
+            if (rename($this->getResourcePath(true), $newFilePath)) {
+                $this->model->{$this->attribute} = $newFileName;
+                $this->deleteOldResource();
+                return true;
             } else {
-                $this->model->addError($this->attribute, 'No temp file');
+                $this->model->addError($this->attribute, 'Cant move file from temp');
                 return false;
             }
         }
