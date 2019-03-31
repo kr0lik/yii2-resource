@@ -135,7 +135,6 @@ class ResourceStrategy
 
             if (copy($this->getResourcePath(true), $newFilePath)) {
                 $this->model->{$this->attribute} = $newFileName;
-                $this->deleteOldResource();
                 return true;
             } else {
                 $this->model->addError($this->attribute, 'Cant move file from temp');
