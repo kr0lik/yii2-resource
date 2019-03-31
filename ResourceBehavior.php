@@ -18,7 +18,7 @@ class ResourceBehavior extends Behavior
             ActiveRecord::EVENT_BEFORE_VALIDATE => '_validate',
             ActiveRecord::EVENT_BEFORE_INSERT => '_save',
             ActiveRecord::EVENT_BEFORE_UPDATE => '_save',
-            ActiveRecord::EVENT_BEFORE_DELETE => '_delete'
+            ActiveRecord::EVENT_AFTER_DELETE => '_delete'
         ];
     }
 
