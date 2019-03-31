@@ -133,7 +133,7 @@ class ResourceStrategy
 
             $newFilePath = $newDir . $newFileName;
 
-            if (rename($this->getResourcePath(true), $newFilePath)) {
+            if (copy($this->getResourcePath(true), $newFilePath)) {
                 $this->model->{$this->attribute} = $newFileName;
                 $this->deleteOldResource();
                 return true;
