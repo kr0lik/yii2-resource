@@ -118,7 +118,7 @@ class ResourceStrategy
 
     public function saveResource(): ?bool
     {
-        if ($this->uploadResource() !=== false && $this->isTemp()) {
+        if ($this->uploadResource() !== false && $this->isTemp()) {
             $extension = pathinfo($this->getResourcePath(), PATHINFO_EXTENSION);
             $newFileName = $this->generateHash() . '.' . $extension;
 
