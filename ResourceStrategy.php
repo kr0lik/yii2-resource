@@ -98,14 +98,14 @@ class ResourceStrategy
             $extension = $file->getExtension();
             $newFileName = $this->generateHash() . '.' . $extension;
 
-            $tempPath = ($this->getTempPath(true);
+            $tempFolder = $this->getTempPath(true);
                          
-            if (! is_dir($tempPath)) {
-                FileHelper::createDirectory($tempPath);
+            if (! is_dir($tempFolder)) {
+                FileHelper::createDirectory($tempFolder);
             }
             
-            if ($file->saveAs($tempPath . $newFileName)) {
-                chmod($tempPath . $newFileName, 0775);
+            if ($file->saveAs($tempFolder . $newFileName)) {
+                chmod($tempFolder . $newFileName, 0775);
                 $this->model->{$this->attribute} = $this->getTempPath() . $newFileName;
                 return true;
             } else {
@@ -181,10 +181,16 @@ class ResourceStrategy
     private function moveResourceToTemp(string $oldResourceName): ?bool
     {
         $status = null;
+        
+        $tempFolder = $this->getTempPath(true);
+                         
+        if (! is_dir($tempFolder)) {
+            FileHelper::createDirectory($tempFolder);
+        }
 
         $oldFilePath = $this->getFolderPath($oldResourceName, true) . $oldResourceName;
-        if ($oldResourceName && file_exists($oldFilePath)) {
-            $newTempPath = $this->getTempPath(true) . $oldResourceName;
+        if ($oldResourceName && file_exists($oldFilePath)) { 
+            $newTempPath = $tempFolder . $oldResourceName;
 
             if (file_exists($newTempPath)) unlink($newTempPath);
             $status = @rename($oldFilePath, $newTempPath);
@@ -193,7 +199,7 @@ class ResourceStrategy
         // Form images with filter in name
         $filteredImages = glob($this->getFolderPath($oldResourceName, true) . pathinfo($oldResourceName, PATHINFO_FILENAME) . '.*.' . pathinfo($oldResourceName, PATHINFO_EXTENSION));
         foreach ($filteredImages as $image) {
-            $newTempPath = $this->getTempPath(true) . $image;
+            $newTempPath = $tempFolder . $image;
 
             if (file_exists($newTempPath)) unlink($newTempPath);
             @rename($image, $newTempPath);
