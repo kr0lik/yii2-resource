@@ -98,8 +98,14 @@ class ResourceStrategy
             $extension = $file->getExtension();
             $newFileName = $this->generateHash() . '.' . $extension;
 
-            if ($file->saveAs($this->getTempPath(true) . $newFileName)) {
-                chmod($this->getTempPath(true) . $newFileName, 0775);
+            $tempPath = ($this->getTempPath(true);
+                         
+            if (! is_dir($tempPath)) {
+                FileHelper::createDirectory($tempPath);
+            }
+            
+            if ($file->saveAs($tempPath . $newFileName)) {
+                chmod($tempPath . $newFileName, 0775);
                 $this->model->{$this->attribute} = $this->getTempPath() . $newFileName;
                 return true;
             } else {
