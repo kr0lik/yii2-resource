@@ -9,6 +9,7 @@ class ResourceBehavior extends Behavior
 {
     public $attributes = [];
     public $folder = 'image';
+    public $tmpFolder = 'upload/temp'
 
     protected $strategies = [];
 
@@ -31,7 +32,7 @@ class ResourceBehavior extends Behavior
                     $this->owner,
                     $attribute,
                     $this->folder,
-                    Yii::$app->params['UploadTempFolder']
+                    $this->tmpFolder
                 );
             }
         }
