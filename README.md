@@ -23,8 +23,6 @@ to the require section of your `composer.json` file.
 Usage
 -----
 
-Add to params 'UploadTempFolder' => 'relative/path/to/temp/folder'
-
 Add \kr0lik\recource\ResourceBehavior to your ActiveRecord
 
 ```php
@@ -48,3 +46,4 @@ class YourModel extends ActiveRecord
     ...
 }
 ```
+*folders are relative to the directory web.
