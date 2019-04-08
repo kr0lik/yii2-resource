@@ -9,7 +9,7 @@ class ResourceBehavior extends Behavior
 {
     public $attributes = [];
     public $folder = 'image';
-    public $tmpFolder = 'upload/temp'
+    public $tmpFolder = 'upload/temp';
 
     protected $strategies = [];
 
