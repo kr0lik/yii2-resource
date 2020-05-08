@@ -1,7 +1,7 @@
 <?php
-namespace kr0lik\recource;
+namespace kr0lik\resource;
 
-use kr0lik\recource\Exception\ResourceException;
+use kr0lik\resource\Exception\ResourceException;
 use yii\base\Behavior;
 use yii\base\Model;
 use yii\db\ActiveRecord;

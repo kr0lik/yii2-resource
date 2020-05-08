@@ -1,5 +1,5 @@
 <?php
-namespace kr0lik\recource\Exception;
+namespace kr0lik\resource\Exception;
 
 class ResourceException extends \Exception
 {

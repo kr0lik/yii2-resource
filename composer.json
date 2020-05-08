@@ -19,7 +19,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"kr0lik\\recource\\": "src/"
+			"kr0lik\\resource\\": "src/"
 		}
 	}
 }

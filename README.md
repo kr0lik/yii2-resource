@@ -23,11 +23,11 @@ to the require section of your `composer.json` file.
 Usage
 -----
 
-Add \kr0lik\recource\ResourceBehavior to your ActiveRecord
+Add \kr0lik\resource\ResourceBehavior to your ActiveRecord
 
 ```php
 use yii\db\ActiveRecord;
-use kr0lik\recource\ResourceBehavior;
+use kr0lik\resource\ResourceBehavior;
 
 class YourModel extends ActiveRecord
 {

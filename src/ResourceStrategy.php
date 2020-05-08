@@ -1,7 +1,7 @@
 <?php
-namespace kr0lik\recource;
+namespace kr0lik\resource;
 
-use kr0lik\recource\Exception\{ResourceExistsException, ResourceMoveToTempException, ResourceSaveException};
+use kr0lik\resource\Exception\{ResourceExistsException, ResourceMoveToTempException, ResourceSaveException};
 use Yii;
 use yii\base\Model;
 use yii\helpers\FileHelper;
