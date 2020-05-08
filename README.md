@@ -40,6 +40,7 @@ class YourModel extends ActiveRecord
                 'attributes' => ['file'],
                 'folder' => 'path/to/store/file/folder',
                 'tmpFolder' => 'path/to/temp/file/folder'
+                'originalFileNameAttribute' => 'attribute to store original file name. if null - no store'
             ]
         ];
     }

@@ -15,14 +15,17 @@ class ResourceStrategy
     private $attribute;
     private $relativeResourceFolder;
     private $relativeTempFolder;
+    private $originalFileNameAttribute;
+
     private $oldResource;
 
-    public function __construct(Model $model, string $attribute, string $relativeResourceFolder, string $relativeTempFolder)
+    public function __construct(Model $model, string $attribute, string $relativeResourceFolder, string $relativeTempFolder, ?string $originalFileNameAttribute)
     {
         $this->model = $model;
         $this->attribute = $attribute;
         $this->relativeResourceFolder = $relativeResourceFolder;
         $this->tempFolder = $relativeTempFolder;
+        $this->originalFileNameAttribute = $originalFileNameAttribute;
     }
 
     public function getResourcePath(bool $absolute = false): string
@@ -57,6 +60,9 @@ class ResourceStrategy
             if ($resource->saveAs($savePath)) {
                 chmod($savePath, 0775);
                 $this->model->{$this->attribute} = $this->getResourceTempPath($newFileName);
+                if (null !== $this->originalFileNameAttribute) {
+                    $this->model->{$this->originalFileNameAttribute} = $file->name;
+                }
             } else {
                 throw new ResourceSaveException($savePath);
             }
@@ -137,7 +143,7 @@ class ResourceStrategy
 
     private function generateHash(): string
     {
-        return md5(time() . uniqid());
+        return md5(uniqid('', true));
     }
 
     private function getPathFromHash(string $hash): string

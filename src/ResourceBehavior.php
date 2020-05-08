@@ -14,6 +14,7 @@ class ResourceBehavior extends Behavior
     public $attributes = [];
     public $folder = 'upload/resource';
     public $tmpFolder = 'upload/temp';
+    public $originalFileNameAttribute = 'original_file_name';
 
     /**
      * @var array<string, ResourceStrategy>
@@ -117,7 +118,8 @@ class ResourceBehavior extends Behavior
                     $this->owner,
                     $attribute,
                     $this->folder,
-                    $this->tmpFolder
+                    $this->tmpFolder,
+                    $this->originalFileNameAttribute
                 );
             }
         }
