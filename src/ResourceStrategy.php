@@ -10,6 +10,7 @@ use yii\web\UploadedFile;
 class ResourceStrategy
 {
     const HASH_LENGTH = 6;
+    const HASH_SPLIT_LENGHT = 2;
 
     private $model;
     private $attribute;
@@ -24,7 +25,7 @@ class ResourceStrategy
         $this->model = $model;
         $this->attribute = $attribute;
         $this->relativeResourceFolder = $relativeResourceFolder;
-        $this->tempFolder = $relativeTempFolder;
+        $this->relativeTempFolder = $relativeTempFolder;
         $this->originalFileNameAttribute = $originalFileNameAttribute;
     }
 
@@ -33,10 +34,16 @@ class ResourceStrategy
         $resourceName = $this->getResourceName();
 
         if ($this->isTempResource($resourceName)) {
-            return $this->getResourceTempPath($resourceName, $absolute);
+            $path = $this->getRelativeResourceTempPath($resourceName);
         } else {
-            return $this->getResourceDestinationPath($resourceName, $absolute);
+            $path = $this->getRelativeResourcePath($resourceName);
         }
+
+        if ($absolute) {
+            return Yii::getAlias('@webroot') . $path;
+        }
+
+        return $path;
     }
 
     /**
@@ -51,24 +58,24 @@ class ResourceStrategy
             $extension = $resource->getExtension();
             $newFileName = $this->generateHash() . '.' . $extension;
 
-            $tempFolder = $this->getTempPath(true);
+            $tempFolder = $this->getAbsoluteTempFolder();
             if (! is_dir($tempFolder)) {
                 FileHelper::createDirectory($tempFolder);
             }
 
-            $savePath = $this->getResourceTempPath($newFileName, true);
+            $savePath = $this->getAbsoluteResourceTempPath($newFileName);
             if ($resource->saveAs($savePath)) {
                 chmod($savePath, 0775);
-                $this->model->{$this->attribute} = $this->getResourceTempPath($newFileName);
+                $this->model->{$this->attribute} = $this->getRelativeResourceTempPath($newFileName);
                 if (null !== $this->originalFileNameAttribute) {
-                    $this->model->{$this->originalFileNameAttribute} = $file->name;
+                    $this->model->{$this->originalFileNameAttribute} = $resource->name;
                 }
             } else {
                 throw new ResourceSaveException($savePath);
             }
         } elseif ($this->isTempResource($resource)) {
-            $fullPath = $this->getResourcePath(true);
-            if (! file_exists($fullPath)) {
+            $fullPath = $this->getAbsoluteResourceTempPath($resource);
+            if (!file_exists($fullPath)) {
                 throw new ResourceExistsException($fullPath, 'Not exists temp resource.');
             }
         }
@@ -86,27 +93,26 @@ class ResourceStrategy
             $extension = pathinfo($resourceName, PATHINFO_EXTENSION);
             $newFileName = $this->generateHash() . '.' . $extension;
 
-            $newDir = $this->getDestinationPath($newFileName, true);
+            $newDir = $this->getAbsoluteResourceFolder($newFileName);
             if (!is_dir($newDir)) {
                 FileHelper::createDirectory($newDir);
             }
 
-            $newFilePath = $this->getResourceDestinationPath($newFileName, true);
-
+            $newFilePath = $this->getAbsoluteResourcePath($newFileName);
             if (file_exists($newFilePath)) {
                 $existsFiles = glob($newDir . pathinfo($newFileName, PATHINFO_FILENAME) . '_*.' . $extension);
                 $newFileName = pathinfo($newFileName, PATHINFO_FILENAME) . '_' . count($existsFiles) . '.' . $extension;
             }
 
-            if (copy($this->getResourcePath(true), $newFilePath)) {
-                $this->oldResource = $this->model->{$this->attribute};
+            if (copy($this->getAbsoluteResourceTempPath($resourceName), $newFilePath)) {
+                $this->oldResource = $resourceName;
                 $this->model->{$this->attribute} = $newFileName;
             } else {
                 throw new ResourceSaveException($newFilePath);
             }
         } else {
-            $resourcePath = $this->getResourceDestinationPath($resourceName, true);
-            if (file_exists($resourcePath)) {
+            $resourcePath = $this->getAbsoluteResourcePath($resourceName);
+            if (!file_exists($resourcePath)) {
                 throw new ResourceExistsException($resourcePath);
             }
         }
@@ -141,45 +147,6 @@ class ResourceStrategy
         }
     }
 
-    private function generateHash(): string
-    {
-        return md5(uniqid('', true));
-    }
-
-    private function getPathFromHash(string $hash): string
-    {
-        $hash = str_replace(DIRECTORY_SEPARATOR, '', $hash);
-        $hash = substr($hash, 0, self::HASH_LENGTH);
-        return DIRECTORY_SEPARATOR . join(DIRECTORY_SEPARATOR, str_split($hash, 2)) . DIRECTORY_SEPARATOR;
-    }
-
-    private function getRelativeResourceFolder(): string
-    {
-        return DIRECTORY_SEPARATOR . trim($this->relativeResourceFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    }
-
-    private function getDestinationPath(string $hash, bool $absolute = false): string
-    {
-        $path = $this->getRelativeResourceFolder() . ltrim($this->getPathFromHash($hash), DIRECTORY_SEPARATOR);
-
-        if (true === $absolute) {
-            $path = Yii::getAlias('@webroot') . $path;
-        }
-
-        return $path;
-    }
-
-    private function getTempPath(bool $absolute = false): string
-    {
-        $path = DIRECTORY_SEPARATOR . trim($this->relativeTempFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-
-        if (true === $absolute) {
-            $path = Yii::getAlias('@webroot') . $path;
-        }
-
-        return $path;
-    }
-
     /**
      * @throws ResourceExistsException
      * @throws ResourceSaveException
@@ -192,22 +159,69 @@ class ResourceStrategy
             $this->uploadResource();
         }
 
-        return $resourceName;
+        return $this->model->{$this->attribute};
     }
 
     private function isTempResource(string $resourceName): bool
     {
-        return strpos($resourceName, trim($this->getTempPath(), DIRECTORY_SEPARATOR)) !== false;
+        return false !== strpos($resourceName, trim($this->getRelativeTempFolder(), DIRECTORY_SEPARATOR));
     }
 
-    protected function getResourceDestinationPath(string $resourceName, bool $absolute = false): string
+    private function generateHash(): string
     {
-        return  $this->getDestinationPath($absolute) . $resourceName;
+        return md5(uniqid('', true));
     }
 
-    protected function getResourceTempPath(string $resourceName, bool $absolute = false): string
+    private function getPathFromHash(string $hash): string
     {
-        return  $this->getTempPath($absolute) . trim(str_replace($this->getTempPath(), '', $resourceName), DIRECTORY_SEPARATOR);
+        $hash = str_replace(DIRECTORY_SEPARATOR, '', $hash);
+        $hash = substr($hash, 0, self::HASH_LENGTH);
+        return DIRECTORY_SEPARATOR . join(DIRECTORY_SEPARATOR, str_split($hash, self::HASH_SPLIT_LENGHT)) . DIRECTORY_SEPARATOR;
+    }
+
+    private function getRelativeResourceFolder(string $resourceName): string
+    {
+        $resourcefolder = DIRECTORY_SEPARATOR . trim($this->relativeResourceFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        return $resourcefolder . ltrim($this->getPathFromHash($resourceName), DIRECTORY_SEPARATOR);
+    }
+
+    private function getRelativeTempFolder(): string
+    {
+        return DIRECTORY_SEPARATOR . trim($this->relativeTempFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    private function getRelativeResourcePath(string $resourceName): string
+    {
+        return  $this->getRelativeResourceFolder($resourceName) . $resourceName;
+    }
+
+    private function getRelativeResourceTempPath(string $resourceName): string
+    {
+        $tempPath = $this->getRelativeTempFolder();
+
+        return $tempPath . trim(str_replace($tempPath, '', $resourceName), DIRECTORY_SEPARATOR);
+    }
+
+
+    private function getAbsoluteTempFolder(): string
+    {
+        return Yii::getAlias('@webroot') . $this->getRelativeTempFolder();
+    }
+
+    private function getAbsoluteResourceFolder(string $resourceName): string
+    {
+        return Yii::getAlias('@webroot') . $this->getRelativeResourceFolder($resourceName);
+    }
+
+    private function getAbsoluteResourceTempPath(string $resourceName): string
+    {
+        return Yii::getAlias('@webroot') . $this->getRelativeResourceTempPath($resourceName);
+    }
+
+    private function getAbsoluteResourcePath(string $resourceName): string
+    {
+        return  Yii::getAlias('@webroot') . $this->getRelativeResourcePath($resourceName);
     }
 
     /**
@@ -215,14 +229,14 @@ class ResourceStrategy
      */
     private function moveResourceToTemp(string $oldResourceName): void
     {
-        $tempFolder = $this->getTempPath(true);
+        $tempFolder = $this->getAbsoluteTempFolder();
         if (! is_dir($tempFolder)) {
             FileHelper::createDirectory($tempFolder);
         }
 
-        $oldFilePath = $this->getResourceDestinationPath($oldResourceName, true);
+        $oldFilePath = $this->getAbsoluteResourcePath($oldResourceName);
         if (file_exists($oldFilePath)) {
-            $newTempPath = $this->getResourceTempPath($oldResourceName, true);
+            $newTempPath = $this->getAbsoluteResourceTempPath($oldResourceName);
             if (file_exists($newTempPath)) unlink($newTempPath);
             if (!@rename($oldFilePath, $newTempPath)) {
                 throw new ResourceMoveToTempException($oldFilePath);
@@ -230,9 +244,9 @@ class ResourceStrategy
         }
 
         // For images with filter in name
-        $filteredImages = glob($this->getDestinationPath($oldResourceName, true) . pathinfo($oldResourceName, PATHINFO_FILENAME) . '.*.' . pathinfo($oldResourceName, PATHINFO_EXTENSION));
+        $filteredImages = glob($this->getAbsoluteResourceFolder($oldResourceName) . pathinfo($oldResourceName, PATHINFO_FILENAME) . '.*.' . pathinfo($oldResourceName, PATHINFO_EXTENSION));
         foreach ($filteredImages as $image) {
-            $newTempPath = $this->getResourceTempPath($image, true);
+            $newTempPath = $this->getAbsoluteResourceTempPath($image);
             if (file_exists($newTempPath)) unlink($newTempPath);
             if (!@rename($image, $newTempPath)) {
                 throw new ResourceMoveToTempException($image);

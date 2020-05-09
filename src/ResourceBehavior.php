@@ -1,8 +1,10 @@
 <?php
 namespace kr0lik\resource;
 
+use kr0lik\resource\Exception\ResourceAttributeException;
 use kr0lik\resource\Exception\ResourceException;
 use yii\base\Behavior;
+use yii\base\InvalidArgumentException;
 use yii\base\Model;
 use yii\db\ActiveRecord;
 
@@ -32,7 +34,7 @@ class ResourceBehavior extends Behavior
         ];
     }
 
-    public function _validateResource($event)
+    public function _validateResource($event): bool
     {
         $status = true;
 
@@ -49,7 +51,7 @@ class ResourceBehavior extends Behavior
         return $status;
     }
 
-    public function _deleteResource($event)
+    public function _deleteResource($event): bool
     {
         $status = true;
 
@@ -66,7 +68,7 @@ class ResourceBehavior extends Behavior
         return $status;
     }
 
-    public function _saveResource($event)
+    public function _saveResource($event): bool
     {
         $status = true;
 
@@ -83,7 +85,7 @@ class ResourceBehavior extends Behavior
         return $status;
     }
     
-    public function _clearResource($event)
+    public function _clearResource($event): bool
     {
         $status = true;
 
@@ -100,11 +102,18 @@ class ResourceBehavior extends Behavior
         return $status;
     }
 
-    public function getResource(string $attribute, bool $absolute = false)
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getResource(string $attribute, bool $absolute = false): string
     {
-        /** @var ResourceStrategy $strategy */
-        $strategy = $this->getStrategies()[$attribute];
-        return $strategy->getResourcePath($absolute);
+        if (array_key_exists($attribute, $this->getStrategies())) {
+            /** @var ResourceStrategy $strategy */
+            $strategy = $this->getStrategies()[$attribute];
+            return $strategy->getResourcePath($absolute);
+        }
+
+        throw new InvalidArgumentException($attribute);
     }
 
     /**
